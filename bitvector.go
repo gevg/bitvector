@@ -1,5 +1,9 @@
 package bitvector
 
+import (
+    "fmt"
+)
+
 type BitVector struct {
 	Bytes   []byte
 	Length  uint64
@@ -66,11 +70,11 @@ func NewBitVector(bytes []byte, bitsLen uint64) *BitVector {
 	return &bv
 }
 
-func (bv *BitVector) Rank1(pos uint64) uint64 {
-	if 8*uint64(len(bv.Bytes)) < pos {
-		println(8*uint64(len(bv.Bytes)), pos)
-		panic(pos)
+func (bv *BitVector) Rank1(pos uint64) (uint64, error) {
+	if bv.Length < pos {
+        return 0, fmt.Errorf("Length(=%d) < pos(=%d)", bv.Length, pos)
 	}
+
 	largePos := pos / largeBlockBit
 	smallPos := pos / smallBlockBit
 	startBit := (smallPos * smallBlockBit)
@@ -89,7 +93,7 @@ func (bv *BitVector) Rank1(pos uint64) uint64 {
 		rank += uint64(1 & (bv.Bytes[endByte] >> i))
 	}
 
-	return rank
+	return rank, nil
 }
 
 func (bv *BitVector) Select1(rank uint64) uint64 {
