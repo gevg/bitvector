@@ -40,3 +40,14 @@ func TestRank1(t *testing.T) {
 	}
 }
 
+func TestSelect1(t *testing.T) {
+	b := []byte{0xFF, 0xFF}
+	bv := bitvector.NewBitVector(b, 16)
+	for i := uint64(0); i < 16; i++ {
+		s := bv.Select1(i)
+		if s != i {
+			t.Errorf("bv.Select1(%d) != %d", i, s)
+		}
+	}
+}
+
