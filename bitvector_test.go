@@ -14,7 +14,7 @@ func TestRank1(t *testing.T) {
 			t.Errorf(err.Error())
 		}
 		if r != i {
-			t.Errorf("bv.Rank1(%d) != %d", i, r)
+			t.Errorf("%d(=bv.Rank1(%d)) != %d", r, i, i)
 		}
 	}
 
@@ -26,7 +26,7 @@ func TestRank1(t *testing.T) {
 			t.Errorf(err.Error())
 		}
 		if r != (i+1)/2 {
-			t.Errorf("bv.Rank1(%d) != %d", i, (i+1)/2)
+			t.Errorf("%d(=bv.Rank1(%d)) != %d", r, i, (i+1)/2)
 		}
 	}
 
@@ -36,7 +36,7 @@ func TestRank1(t *testing.T) {
 		t.Errorf("Over Length error")
 	}
 	if r != 0 {
-		t.Errorf("bv.Rank1(%d) != %d", i, 0)
+		t.Errorf("%d(=bv.Rank1(%d)) != %d", r, i, 0)
 	}
 }
 
@@ -46,7 +46,7 @@ func TestSelect1(t *testing.T) {
 	for i := uint64(0); i < 16; i++ {
 		s := bv.Select1(i)
 		if s != i {
-			t.Errorf("bv.Select1(%d) != %d", i, s)
+			t.Errorf("%d(=bv.Select1(%d)) != %d ", s, i, i)
 		}
 	}
 
@@ -55,7 +55,7 @@ func TestSelect1(t *testing.T) {
 	for i := uint64(0); i < 8; i++ {
 		s := bv.Select1(i)
 		if s != i * 2 {
-			t.Errorf("%d(=bv.Select1(%d)) != %d ", s, i, i)
+			t.Errorf("%d(=bv.Select1(%d)) != %d ", s, i, i*2)
 		}
 	}
 }
