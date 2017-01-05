@@ -49,5 +49,14 @@ func TestSelect1(t *testing.T) {
 			t.Errorf("bv.Select1(%d) != %d", i, s)
 		}
 	}
+
+	b = []byte{0x55, 0x55}
+	bv = bitvector.NewBitVector(b, 16)
+	for i := uint64(0); i < 8; i++ {
+		s := bv.Select1(i)
+		if s != i * 2 {
+			t.Errorf("%d(=bv.Select1(%d)) != %d ", s, i, i)
+		}
+	}
 }
 
