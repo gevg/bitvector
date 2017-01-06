@@ -96,9 +96,9 @@ func (bv *BitVector) Rank1(pos uint64) (uint64, error) {
 	return rank, nil
 }
 
-func (bv *BitVector) Select1(rank uint64) uint64 {
+func (bv *BitVector) Select1(rank uint64) (uint64, error) {
 	if bv.rankMax < rank+1 {
-		panic(rank)
+        return 0, fmt.Errorf("bv.rankMax(=%d) < rank+1(=%d)", bv.rankMax, rank+1)
 	}
 	largeLen := uint64(len(bv.large))
 	min := uint64(0)
@@ -155,7 +155,7 @@ func (bv *BitVector) Select1(rank uint64) uint64 {
 
 	r += uint64(bv.small[smallPos])
 	if r == rank+1 {
-		return smallPos * smallBlockBit
+		return smallPos * smallBlockBit, nil
 	}
 
 	for n := uint64(0); n < smallBlockByte; n++ {
@@ -163,11 +163,11 @@ func (bv *BitVector) Select1(rank uint64) uint64 {
 		for i := uint64(0); i < 8; i++ {
 			r += uint64(1 & (b >> i))
 			if r == rank+1 {
-				return i + 8*n + smallPos*smallBlockBit
+				return i + 8*n + smallPos*smallBlockBit, nil
 			}
 		}
 	}
 
 	println(rank, r, largePos, smallPos)
-	panic("over rank:" + string(rank))
+    return 0, fmt.Errorf("over rank(=%d)", rank)
 }
