@@ -64,5 +64,14 @@ func TestSelect1(t *testing.T) {
 			t.Errorf("%d(=bv.Select1(%d)) != %d ", s, i, i*2)
 		}
 	}
+
+    i := uint64(8)
+	r, err := bv.Select1(i)
+	if err == nil {
+		t.Errorf("Over rank error")
+	}
+	if r != 0 {
+		t.Errorf("%d(=bv.Select1(%d)) != %d", r, i, 0)
+	}
 }
 
