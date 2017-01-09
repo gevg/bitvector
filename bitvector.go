@@ -1,7 +1,7 @@
 package bitvector
 
 import (
-    "fmt"
+	"fmt"
 )
 
 type BitVector struct {
@@ -49,15 +49,15 @@ func NewBitVector(bytes []byte, bitsLen uint64) *BitVector {
 
 	for i := uint64(0); i < bytesLen; i++ {
 		if largeCount == largeBlockByte {
-			largeCount = 0
 			largeValue += uint64(smallValue)
-			smallValue = 0
 			bv.large[largeIndex] = largeValue
+			largeCount = 0
+			smallValue = 0
 			largeIndex++
 		}
 		if smallCount == smallBlockByte {
-			smallCount = 0
 			bv.small[smallIndex] = smallValue
+			smallCount = 0
 			smallIndex++
 		}
 
@@ -72,7 +72,7 @@ func NewBitVector(bytes []byte, bitsLen uint64) *BitVector {
 
 func (bv *BitVector) Rank1(pos uint64) (uint64, error) {
 	if bv.Length < pos {
-        return 0, fmt.Errorf("Length(=%d) < pos(=%d)", bv.Length, pos)
+		return 0, fmt.Errorf("Length(=%d) < pos(=%d)", bv.Length, pos)
 	}
 
 	largePos := pos / largeBlockBit
@@ -98,8 +98,9 @@ func (bv *BitVector) Rank1(pos uint64) (uint64, error) {
 
 func (bv *BitVector) Select1(rank uint64) (uint64, error) {
 	if bv.rankMax < rank+1 {
-        return 0, fmt.Errorf("bv.rankMax(=%d) < rank+1(=%d)", bv.rankMax, rank+1)
+		return 0, fmt.Errorf("bv.rankMax(=%d) < rank+1(=%d)", bv.rankMax, rank+1)
 	}
+
 	largeLen := uint64(len(bv.large))
 	min := uint64(0)
 	max := largeLen - 1
@@ -168,6 +169,5 @@ func (bv *BitVector) Select1(rank uint64) (uint64, error) {
 		}
 	}
 
-	println(rank, r, largePos, smallPos)
-    return 0, fmt.Errorf("over rank(=%d)", rank)
+	return 0, fmt.Errorf("over rank(=%d)", rank)
 }
