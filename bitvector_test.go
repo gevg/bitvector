@@ -74,3 +74,27 @@ func TestSelect1(t *testing.T) {
 		t.Errorf("%d(=bv.Select1(%d)) != %d", r, i, 0)
 	}
 }
+
+func newBitVectorForBench(length uint64) *bitvector.BitVector {
+	byteSlice := make([]byte, length)
+	for i := 0; i < len(byteSlice); i++ {
+		byteSlice[i] = 0x55
+	}
+	return bitvector.NewBitVector(byteSlice, uint64(len(byteSlice)*8))
+}
+
+func BenchmarkRank1_100000(b *testing.B) {
+	bv := newBitVectorForBench(100000)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		bv.Rank1(bv.Length - 1)
+	}
+}
+
+func BenchmarkRank1_100000000(b *testing.B) {
+	bv := newBitVectorForBench(100000000)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		bv.Rank1(bv.Length - 1)
+	}
+}
