@@ -75,12 +75,19 @@ func TestSelect1(t *testing.T) {
 	}
 }
 
+var cacheBV = make(map[uint64](*bitvector.BitVector))
+
 func newBitVectorForBench(length uint64) *bitvector.BitVector {
-	byteSlice := make([]byte, length)
-	for i := 0; i < len(byteSlice); i++ {
-		byteSlice[i] = 0x55
+	bv := cacheBV[length]
+	if bv == nil {
+		s := make([]byte, length)
+		for i := 0; i < len(s); i++ {
+			s[i] = 0x55
+		}
+		bv = bitvector.NewBitVector(s, uint64(len(s)*8))
+		cacheBV[length] = bv
 	}
-	return bitvector.NewBitVector(byteSlice, uint64(len(byteSlice)*8))
+	return bv
 }
 
 func BenchmarkRank1_100000(b *testing.B) {
@@ -96,5 +103,21 @@ func BenchmarkRank1_100000000(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		bv.Rank1(bv.Length - 1)
+	}
+}
+
+func BenchmarkSelect1_100000(b *testing.B) {
+	bv := newBitVectorForBench(100000)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		bv.Select1(bv.Length / 2)
+	}
+}
+
+func BenchmarkSelect1_100000000(b *testing.B) {
+	bv := newBitVectorForBench(100000000)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		bv.Select1(bv.Length / 2)
 	}
 }
