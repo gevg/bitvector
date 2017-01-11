@@ -171,3 +171,14 @@ func (bv *BitVector) Select1(rank uint64) (uint64, error) {
 
 	return 0, fmt.Errorf("over rank(=%d)", rank)
 }
+
+func Log2Floor(n uint64) uint64 {
+	result := uint64(0)
+	for {
+		n >>= 1
+		if n == 0 {
+			return result
+		}
+		result++
+	}
+}
