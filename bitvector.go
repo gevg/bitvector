@@ -182,3 +182,11 @@ func Log2Floor(n uint64) uint64 {
 		result++
 	}
 }
+
+func Log2Ceil(n uint64) uint64 {
+	result := uint64(0)
+	if n != 0 {
+		result = Log2Floor(n - 1)
+	}
+	return result
+}
