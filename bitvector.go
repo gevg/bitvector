@@ -190,3 +190,28 @@ func Log2Ceil(n uint64) uint64 {
 	}
 	return result
 }
+
+type SparseBitVector struct {
+	Bytes      []byte
+	Length     uint64
+	HighLength uint64
+	LowLength  uint64
+	high       []uint64
+	low        []uint16
+	rankMax    uint64
+}
+
+func NewSparseBitVector(bytes []byte, bitsLen uint64, lowLen uint64) *SparseBitVector {
+	highLen := Log2Ceil(bitsLen) - lowLen
+    bv := &SparseBitVector{
+		bytes,
+		bitsLen,
+		highLen,
+		lowLen,
+		make([]uint64, highLen),
+		make([]uint16, lowLen),
+		0,
+	}
+    return bv
+}
+
