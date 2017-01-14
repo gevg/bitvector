@@ -203,7 +203,7 @@ type SparseBitVector struct {
 
 func NewSparseBitVector(bytes []byte, bitsLen uint64, lowLen uint64) *SparseBitVector {
 	highLen := Log2Ceil(bitsLen) - lowLen
-    bv := &SparseBitVector{
+	bv := &SparseBitVector{
 		bytes,
 		bitsLen,
 		highLen,
@@ -212,6 +212,5 @@ func NewSparseBitVector(bytes []byte, bitsLen uint64, lowLen uint64) *SparseBitV
 		make([]uint16, lowLen),
 		0,
 	}
-    return bv
+	return bv
 }
-
