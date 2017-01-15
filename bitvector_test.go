@@ -121,3 +121,8 @@ func BenchmarkSelect1_100000000(b *testing.B) {
 		bv.Select1(bv.Length / 2)
 	}
 }
+
+func TestSparseBitVector(t *testing.T) {
+	b := []byte{0xFF, 0xFF}
+	bitvector.NewSparseBitVector(b, 16)
+}

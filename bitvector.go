@@ -201,15 +201,34 @@ type SparseBitVector struct {
 	rankMax    uint64
 }
 
-func NewSparseBitVector(bytes []byte, bitsLen uint64, lowLen uint64) *SparseBitVector {
+func NewSparseBitVector(bytes []byte, bitsLen uint64) *SparseBitVector {
+    lowLen := uint64(8)
 	highLen := Log2Ceil(bitsLen) - lowLen
+
+    weight := uint64(0)
+    for i := uint64(0); i < bitsLen; i++ {
+        bit := 1 & (bytes[i/8] >> (i % 8))
+        if 1 == bit {
+            weight++
+        }
+    }
+    low := make([]uint64, weight)
+    lowIndex := uint64(0)
+    for i := uint64(0); i < bitsLen; i++ {
+        bit := 1 & (bytes[i/8] >> (i % 8))
+        if 1 == bit {
+            low[lowIndex] = i & 0xFF
+            lowIndex++
+        }
+    }
+
 	bv := &SparseBitVector{
 		bytes,
 		bitsLen,
 		highLen,
 		lowLen,
-		make([]uint64, highLen),
-		make([]uint16, lowLen),
+        low,
+        nil,
 		0,
 	}
 	return bv
