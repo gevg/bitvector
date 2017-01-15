@@ -196,40 +196,52 @@ type SparseBitVector struct {
 	Length     uint64
 	HighLength uint64
 	LowLength  uint64
-	high       []uint64
-	low        []uint16
-	rankMax    uint64
+	high       *BitVector
+	low        []uint8
 }
 
 func NewSparseBitVector(bytes []byte, bitsLen uint64) *SparseBitVector {
-    lowLen := uint64(8)
+	lowLen := uint64(8)
 	highLen := Log2Ceil(bitsLen) - lowLen
 
-    weight := uint64(0)
-    for i := uint64(0); i < bitsLen; i++ {
-        bit := 1 & (bytes[i/8] >> (i % 8))
-        if 1 == bit {
-            weight++
-        }
-    }
-    low := make([]uint64, weight)
-    lowIndex := uint64(0)
-    for i := uint64(0); i < bitsLen; i++ {
-        bit := 1 & (bytes[i/8] >> (i % 8))
-        if 1 == bit {
-            low[lowIndex] = i & 0xFF
-            lowIndex++
-        }
-    }
+	weight := uint64(0)
+	for i := uint64(0); i < bitsLen; i++ {
+		bit := 1 & (bytes[i/8] >> (i % 8))
+		if 1 == bit {
+			weight++
+		}
+	}
 
+	low := make([]uint8, weight)
+	highBitVector := make([]byte, weight/(8/2)+1)
+	lowIndex := uint64(0)
+	highIndex := uint64(0)
+	prevHighValue := uint64(0)
+	for i := uint64(0); i < bitsLen; i++ {
+		bit := 1 & (bytes[i/8] >> (i % 8))
+		if 1 == bit {
+			low[lowIndex] = uint8(i & 0xFF)
+			lowIndex++
+
+			highValue := i >> lowLen
+			inc := highValue - prevHighValue
+			for n := uint64(0); n < inc; n++ {
+				highIndex++
+			}
+			highBitVector[highIndex/8] = 1 << (highLen % 8)
+			highIndex++
+			prevHighValue = highValue
+		}
+	}
+
+	high := NewBitVector(highBitVector, uint64(len(highBitVector)*8))
 	bv := &SparseBitVector{
 		bytes,
 		bitsLen,
 		highLen,
 		lowLen,
-        low,
-        nil,
-		0,
+		high,
+		low,
 	}
 	return bv
 }
