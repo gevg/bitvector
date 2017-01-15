@@ -197,7 +197,7 @@ type SparseBitVector struct {
 	HighLength uint64
 	LowLength  uint64
 	high       *BitVector
-	low        []uint8
+	low        []byte
 }
 
 func NewSparseBitVector(bytes []byte, bitsLen uint64) *SparseBitVector {
@@ -212,7 +212,7 @@ func NewSparseBitVector(bytes []byte, bitsLen uint64) *SparseBitVector {
 		}
 	}
 
-	low := make([]uint8, weight)
+	low := make([]byte, weight)
 	highBitVector := make([]byte, weight/(8/2)+1)
 	lowIndex := uint64(0)
 	highIndex := uint64(0)
@@ -220,7 +220,7 @@ func NewSparseBitVector(bytes []byte, bitsLen uint64) *SparseBitVector {
 	for i := uint64(0); i < bitsLen; i++ {
 		bit := 1 & (bytes[i/8] >> (i % 8))
 		if 1 == bit {
-			low[lowIndex] = uint8(i & 0xFF)
+			low[lowIndex] = byte(i & 0xFF)
 			lowIndex++
 
 			highValue := i >> lowLen
