@@ -245,3 +245,13 @@ func NewSparseBitVector(bytes []byte, bitsLen uint64) *SparseBitVector {
 	}
 	return bv
 }
+
+func (bv *SparseBitVector) Select1(rank uint64) (uint64, error) {
+	result, err := bv.high.Select1(rank)
+	if err != nil {
+		return 0, err
+	}
+	result <<= 8
+	result += uint64(bv.low[rank])
+	return result, nil
+}
