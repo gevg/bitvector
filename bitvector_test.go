@@ -126,3 +126,20 @@ func TestSparseBitVector(t *testing.T) {
 	b := []byte{0xFF, 0xFF}
 	bitvector.NewSparseBitVector(b, 16)
 }
+
+func TestSparseBitVectorSelect1(t *testing.T) {
+	b := []byte{}
+	for i := 0; i < 33; i++ {
+		b = append(b, 0xFF)
+	}
+	bv := bitvector.NewSparseBitVector(b, uint64(len(b)*8))
+	for r := uint64(1); r < uint64(len(b)*8); r++ {
+		s, err := bv.Select1(r)
+		if err != nil {
+			t.Errorf("Over rank error")
+		}
+		if s != r {
+			t.Errorf("err: %d %d ", s, r)
+		}
+	}
+}
