@@ -213,7 +213,7 @@ func NewSparseBitVector(bytes []byte, bitsLen uint64) *SparseBitVector {
 	}
 
 	low := make([]byte, weight)
-	highBitVector := make([]byte, weight/2)
+	highBitVector := make([]byte, weight/4)
 	lowIndex := uint64(0)
 	highIndex := uint64(0)
 	prevHighValue := uint64(0)
@@ -245,12 +245,11 @@ func NewSparseBitVector(bytes []byte, bitsLen uint64) *SparseBitVector {
 }
 
 func (bv *SparseBitVector) Select1(rank uint64) (uint64, error) {
-	//result, err := bv.high.Select1(rank)
-	//if err != nil {
-	//	return 0, err
-	//}
-	//result <<= 8
-	//result += uint64(bv.low[rank])
-	result := uint64(bv.low[rank])
+	result, err := bv.high.Select1(rank)
+	if err != nil {
+		return 0, err
+	}
+	result = (result - rank) << 8
+	result += uint64(bv.low[rank])
 	return result, nil
 }
