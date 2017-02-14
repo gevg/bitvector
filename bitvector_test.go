@@ -136,7 +136,7 @@ func TestSparseBitVectorSelect1(t *testing.T) {
 	for r := uint64(1); r < uint64(len(b)*8); r++ {
 		s, err := bv.Select1(r)
 		if err != nil {
-			t.Errorf("Over rank error")
+			t.Errorf("Over rank error: %v", err)
 		}
 		if s != r {
 			t.Errorf("err: %d %d ", s, r)
@@ -155,7 +155,7 @@ func TestSparseBitVectorSelect1(t *testing.T) {
 	for r := uint64(1); r < uint64(len(b)/10); r++ {
 		s, err := bv.Select1(r)
 		if err != nil {
-			t.Errorf("Over rank error")
+            t.Errorf("Over rank error: %v", err)
 		}
 		if s != (r * 80) {
 			t.Errorf("err: %d %d ", s, r)

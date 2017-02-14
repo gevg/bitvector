@@ -18,6 +18,14 @@ const smallBlockByte = smallBlockBit / 8
 const largeBlockByte = largeBlockBit / 8
 const largeToSmall = largeBlockByte / smallBlockByte
 
+func bitToByte(b uint64) uint64 {
+	if b%8 == 0 {
+		return b / 8
+	} else {
+		return b/8 + 1
+	}
+}
+
 func popCount(b byte) byte {
 	return (1 & b) +
 		(1 & (b >> 1)) +
@@ -45,7 +53,7 @@ func NewBitVector(bytes []byte, bitsLen uint64) *BitVector {
 	var smallIndex uint64 = 1
 	var smallCount uint64
 	var smallValue uint16
-	var bytesLen = bitsLen / 8
+	var bytesLen = bitToByte(bitsLen)
 
 	for i := uint64(0); i < bytesLen; i++ {
 		if largeCount == largeBlockByte {
@@ -184,11 +192,11 @@ func Log2Floor(n uint64) uint64 {
 }
 
 func Log2Ceil(n uint64) uint64 {
-	result := uint64(0)
-	if n != 0 {
-		result = Log2Floor(n - 1)
+	if n == 0 {
+		return 0
+	} else {
+		return Log2Floor(n-1) + 1
 	}
-	return result
 }
 
 type SparseBitVector struct {
@@ -203,27 +211,34 @@ type SparseBitVector struct {
 func NewSparseBitVector(bytes []byte, bitsLen uint64) *SparseBitVector {
 
 	weight := uint64(0)
+	lastIndex := uint64(0)
 	for i := uint64(0); i < bitsLen; i++ {
 		bit := 1 & (bytes[i/8] >> (i % 8))
 		if 1 == bit {
 			weight++
+			lastIndex = i
 		}
 	}
 	lowLen := Log2Floor(bitsLen / weight)
 	highLen := Log2Ceil(bitsLen) - lowLen
-	lowMask := uint64(0)
-	for i := uint64(0); i < lowLen; i++ {
-		lowMask |= 1 << i
-	}
+	lowMask := uint64((1 << lowLen) - 1)
 
-	low := make([]byte, weight)
-	highBitVector := make([]byte, weight/4)
+	lowSize := lowLen * weight
+	highSize := weight
+	highSize += uint64(lastIndex >> lowLen)
+
+	low := make([]byte, bitToByte(lowSize))
+	high := make([]byte, bitToByte(highSize))
 	lowIndex := uint64(0)
 	highIndex := uint64(0)
 	prevHighValue := uint64(0)
 	for i := uint64(0); i < bitsLen; i++ {
 		bit := 1 & (bytes[i/8] >> (i % 8))
-		if 1 == bit {
+		if bit != 1 {
+			continue
+		}
+
+		if lowLen != 0 {
 			lowVal := i & lowMask
 			lowEnd := (lowIndex + lowLen - 1) / 8
 			lowShift := lowIndex % 8
@@ -233,23 +248,23 @@ func NewSparseBitVector(bytes []byte, bitsLen uint64) *SparseBitVector {
 				lowShift = 0
 			}
 			lowIndex += lowLen
-
-			highValue := i >> lowLen
-			inc := highValue - prevHighValue
-			highIndex += inc
-			highBitVector[highIndex/8] |= 1 << (highIndex % 8)
-			highIndex++
-			prevHighValue = highValue
 		}
+
+		highValue := i >> lowLen
+		inc := highValue - prevHighValue
+		highIndex += inc
+		high[highIndex/8] |= 1 << (highIndex % 8)
+		highIndex++
+		prevHighValue = highValue
 	}
 
-	high := NewBitVector(highBitVector, uint64(len(highBitVector)*8))
+	highBV := NewBitVector(high, highSize)
 	bv := &SparseBitVector{
 		bytes,
 		bitsLen,
 		highLen,
 		lowLen,
-		high,
+		highBV,
 		low,
 	}
 	return bv
@@ -260,7 +275,19 @@ func (bv *SparseBitVector) Select1(rank uint64) (uint64, error) {
 	if err != nil {
 		return 0, err
 	}
-	result = (result - rank) << 8
-	result += uint64(bv.low[rank])
+	result = (result - rank) << bv.LowLength
+	if len(bv.low) != 0 {
+		lowIndex := bv.LowLength * rank
+		lowEnd := (lowIndex + bv.LowLength - 1) / 8
+		leftShift := uint64(0)
+		lowVal := uint64(0)
+		for n := lowIndex / 8; n <= lowEnd; n++ {
+			lowVal += uint64(bv.low[n]) << leftShift
+			leftShift += 8
+		}
+		lowVal >>= lowIndex % 8
+		lowVal &= uint64((1 << bv.LowLength) - 1)
+		result += uint64(lowVal)
+	}
 	return result, nil
 }
