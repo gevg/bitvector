@@ -126,7 +126,7 @@ func (bv *BitVector) Select1(rank uint64) (uint64, error) {
 		}
 	}
 
-	largePos := uint64(0)
+	var largePos uint64
 	if rank+1 <= bv.large[max] {
 		largePos = min
 	} else {
@@ -155,7 +155,7 @@ func (bv *BitVector) Select1(rank uint64) (uint64, error) {
 		}
 	}
 
-	smallPos := uint64(0)
+	var smallPos uint64
 	if rank+1 <= uint64(bv.small[max])+r {
 		smallPos = min
 	} else {
@@ -171,6 +171,85 @@ func (bv *BitVector) Select1(rank uint64) (uint64, error) {
 		b := bv.Bytes[n+smallPos*smallBlockByte]
 		for i := uint64(0); i < 8; i++ {
 			r += uint64(1 & (b >> i))
+			if r == rank+1 {
+				return i + 8*n + smallPos*smallBlockBit, nil
+			}
+		}
+	}
+
+	return 0, fmt.Errorf("over rank(=%d)", rank)
+}
+
+func (bv *BitVector) Select0(rank uint64) (uint64, error) {
+	if (bv.Length - bv.rankMax) < rank+1 {
+		return 0, fmt.Errorf("bv.Length(%d) - bv.rankMax(=%d) < rank+1(=%d)", bv.Length, bv.rankMax, rank+1)
+	}
+
+	largeLen := uint64(len(bv.large))
+	min := uint64(0)
+	max := largeLen - 1
+	for {
+		mid := (max - min) / 2
+		if mid == 0 {
+			break
+		}
+		mid += min
+
+		if rank+1 <= (mid*largeBlockByte)-bv.large[mid] {
+			max = mid - 1
+		} else {
+			min = mid
+		}
+	}
+
+	var largePos uint64
+	if rank+1 <= (max*largeBlockByte)-bv.large[max] {
+		largePos = min
+	} else {
+		largePos = max
+	}
+
+	smallLen := uint64(len(bv.small))
+	min = largePos * largeToSmall
+	max = min + largeToSmall - 1
+	if smallLen-1 < max {
+		max = smallLen - 1
+	}
+
+	r := (largePos * largeBlockByte) - bv.large[largePos]
+	for {
+		mid := (max - min) / 2
+		if mid == 0 {
+			break
+		}
+		mid += min
+
+		if rank+1 <= (mid*smallBlockByte)-uint64(bv.small[mid])+r {
+			max = mid - 1
+		} else {
+			min = mid
+		}
+	}
+
+	var smallPos uint64
+	if rank+1 <= (max*smallBlockByte)-uint64(bv.small[max])+r {
+		smallPos = min
+	} else {
+		smallPos = max
+	}
+
+	r += (smallPos * smallBlockByte) - uint64(bv.small[smallPos])
+	if r == rank+1 {
+		return smallPos * smallBlockBit, nil
+	}
+
+	for n := uint64(0); n < smallBlockByte; n++ {
+		if uint64(len(bv.Bytes)) <= n+smallPos*smallBlockByte {
+			break
+		}
+		b := bv.Bytes[n+smallPos*smallBlockByte]
+		for i := uint64(0); i < 8; i++ {
+			r += uint64((1 & (^b >> i)))
 			if r == rank+1 {
 				return i + 8*n + smallPos*smallBlockBit, nil
 			}

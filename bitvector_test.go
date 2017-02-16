@@ -75,6 +75,41 @@ func TestSelect1(t *testing.T) {
 	}
 }
 
+func TestSelect0(t *testing.T) {
+	b := []byte{0x00, 0x00}
+	bv := bitvector.NewBitVector(b, 16)
+	for i := uint64(0); i < 16; i++ {
+		s, err := bv.Select0(i)
+		if err != nil {
+			t.Errorf(err.Error())
+		}
+		if s != i {
+			t.Errorf("%d(=bv.Select0(%d)) != %d ", s, i, i)
+		}
+	}
+
+	b = []byte{0xAA, 0xAA}
+	bv = bitvector.NewBitVector(b, 16)
+	for i := uint64(0); i < 8; i++ {
+		s, err := bv.Select0(i)
+		if err != nil {
+			t.Errorf(err.Error())
+		}
+		if s != i*2 {
+			t.Errorf("%d(=bv.Select0(%d)) != %d ", s, i, i*2)
+		}
+	}
+
+	i := uint64(8)
+	r, err := bv.Select0(i)
+	if err == nil {
+		t.Errorf("Over rank error")
+	}
+	if r != 0 {
+		t.Errorf("%d(=bv.Select0(%d)) != %d", r, i, 0)
+	}
+}
+
 var cacheBV = make(map[uint64](*bitvector.BitVector))
 
 func newBitVectorForBench(length uint64) *bitvector.BitVector {
@@ -155,7 +190,7 @@ func TestSparseBitVectorSelect1(t *testing.T) {
 	for r := uint64(1); r < uint64(len(b)/10); r++ {
 		s, err := bv.Select1(r)
 		if err != nil {
-            t.Errorf("Over rank error: %v", err)
+			t.Errorf("Over rank error: %v", err)
 		}
 		if s != (r * 80) {
 			t.Errorf("err: %d %d ", s, r)
