@@ -65,6 +65,18 @@ func TestSelect1(t *testing.T) {
 		}
 	}
 
+	b = []byte{0xAA, 0xAA}
+	bv = bitvector.NewBitVector(b, 16)
+	for i := uint64(0); i < 8; i++ {
+		s, err := bv.Select1(i)
+		if err != nil {
+			t.Errorf(err.Error())
+		}
+		if s != i*2+1 {
+			t.Errorf("%d(=bv.Select1(%d)) != %d ", s, i, i*2+1)
+		}
+	}
+
 	i := uint64(8)
 	r, err := bv.Select1(i)
 	if err == nil {
@@ -100,6 +112,18 @@ func TestSelect0(t *testing.T) {
 		}
 	}
 
+	b = []byte{0x55, 0x55}
+	bv = bitvector.NewBitVector(b, 16)
+	for i := uint64(0); i < 8; i++ {
+		s, err := bv.Select0(i)
+		if err != nil {
+			t.Errorf(err.Error())
+		}
+		if s != i*2+1 {
+			t.Errorf("%d(=bv.Select0(%d)) != %d ", s, i, i*2+1)
+		}
+	}
+
 	i := uint64(8)
 	r, err := bv.Select0(i)
 	if err == nil {
@@ -107,6 +131,12 @@ func TestSelect0(t *testing.T) {
 	}
 	if r != 0 {
 		t.Errorf("%d(=bv.Select0(%d)) != %d", r, i, 0)
+	}
+	b = []byte{0xFF, 0xFF}
+	bv = bitvector.NewBitVector(b, 16)
+	r, err = bv.Select0(0)
+	if err == nil {
+		t.Errorf("Over rank error")
 	}
 }
 
@@ -160,6 +190,41 @@ func BenchmarkSelect1_100000000(b *testing.B) {
 func TestSparseBitVector(t *testing.T) {
 	b := []byte{0xFF, 0xFF}
 	bitvector.NewSparseBitVector(b, 16)
+}
+
+func TestSparseBitVectorRank1(t *testing.T) {
+	b := []byte{0xFF, 0xFF}
+	bv := bitvector.NewSparseBitVector(b, 16)
+	for i := uint64(0); i <= 16; i++ {
+		r, err := bv.Rank1(i)
+		if err != nil {
+			t.Errorf(err.Error())
+		}
+		if r != i {
+			t.Errorf("%d(=bv.Rank1(%d)) != %d", r, i, i)
+		}
+	}
+
+	b = []byte{0x55, 0x55}
+	bv = bitvector.NewSparseBitVector(b, 16)
+	for i := uint64(0); i <= 16; i++ {
+		r, err := bv.Rank1(i)
+		if err != nil {
+			t.Errorf(err.Error())
+		}
+		if r != (i+1)/2 {
+			t.Errorf("%d(=bv.Rank1(%d)) != %d", r, i, (i+1)/2)
+		}
+	}
+
+	i := uint64(17)
+	r, err := bv.Rank1(i)
+	if err == nil {
+		t.Errorf("Over Length error")
+	}
+	if r != 0 {
+		t.Errorf("%d(=bv.Rank1(%d)) != %d", r, i, 0)
+	}
 }
 
 func TestSparseBitVectorSelect1(t *testing.T) {
