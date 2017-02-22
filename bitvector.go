@@ -394,11 +394,9 @@ func (bv *SparseBitVector) Rank1(pos uint64) (uint64, error) {
 		n = highPos - highRank0
 	}
 
-	fmt.Printf("start n=%d\n", n)
 	for i := highPos; 1 == 1&(bv.high.Bytes[i/8]>>(i%8)); i++ {
 
 		lowIndex := bv.LowLength * n
-		fmt.Printf("lowIndex=%d, i=%d %d %d, n=%d\n", lowIndex, i, i/8, i%8, n)
 		lowEnd := (lowIndex + bv.LowLength - 1) / 8
 		leftShift := uint64(0)
 		lowVal := uint64(0)
@@ -410,15 +408,12 @@ func (bv *SparseBitVector) Rank1(pos uint64) (uint64, error) {
 		lowVal &= uint64((1 << bv.LowLength) - 1)
 		value := (highRank0 << bv.LowLength) + lowVal
 
-		fmt.Printf("value=%d, pos=%d n=%d\n", value, pos, n)
 		if pos <= value {
-			fmt.Printf("result=%d\n", n)
 			return n, nil
 		}
 		n++
 	}
 
-	fmt.Printf("result(last)=%d\n", n)
 	return n, nil
 
 }
